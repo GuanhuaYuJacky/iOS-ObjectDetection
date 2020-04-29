@@ -3,6 +3,7 @@
 //  yolov3
 //
 //  Created by Alexander on 02/07/2019.
+//  Fine turned by Guanhua Yu on 04/29/2017
 //  Copyright © 2019 Alexander. All rights reserved.
 //
 
@@ -11,44 +12,44 @@ import UIKit
 import Accelerate
 
 enum YOLOType {
-  case v3_Tiny
+  case bdd_improve
   case v3_416
   
   func description() -> String {
     switch self {
     case .v3_416:
       return "YOLOv3-416"
-    case .v3_Tiny:
-      return "YOLOv3-tiny"
+    case .bdd_improve:
+      return "bdd-improve"
     }
   }
   
   static func initFrom(name: String) -> YOLOType {
     switch name {
-    case "YOLOv3-tiny":
-      return .v3_Tiny
+    case "bdd-improve":
+      return .bdd_improve
     case "YOLOv3-416":
       return .v3_416
     default:
-      return .v3_Tiny
+      return .bdd_improve
     }
   }
   
   static func modelNames() -> [String] {
-    return ["YOLOv3-tiny", "YOLOv3-416"]
+    return ["bdd-improve", "YOLOv3-416"]
   }
 }
 
 class YOLO: NSObject {
   
-  static let inputSize: Float = 416.0
+  static let inputSize: Float = 608.0
   static let boxesPerCell: Int = 3
   
   private var model: MLModel?
   private let pixelBufferSize = CGSize(width: CGFloat(YOLO.inputSize),
                                        height: CGFloat(YOLO.inputSize))
   private let inputName = "image"
-  private var classes = [Float](repeating: 0, count: 80)
+  private var classes = [Float](repeating: 0, count: 10)
   private var anchors: [String: Array<Float>]!
   
   var confidenceThreshold: Float
@@ -73,7 +74,7 @@ class YOLO: NSObject {
     var url: URL? = nil
     self.type = type
     switch type {
-    case .v3_Tiny:
+    case .bdd_improve:
       url = Bundle.main.url(forResource: "yolo-tiny", withExtension:"mlmodelc")
       self.anchors = tiny_anchors
     case .v3_416:
@@ -143,7 +144,7 @@ class YOLO: NSObject {
           let y_pos = (sigmoid(bby) + Float(y)) * gridSize
           let width = exp(bbw) * self.anchors[name]![2 * box_i]
           let height = exp(bbh) * self.anchors[name]![2 * box_i + 1]
-          for c in 0 ..< 80 {
+          for c in 0 ..< 10 {
             classes[c] = Float(pointer[offset(ch: boxOffset + 5 + c, x: x, y: y)])
           }
           softmax(&classes)
